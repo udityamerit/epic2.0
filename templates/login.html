@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AIOPharmacy - Account Access</title>
+    <style>
+        /* General Body and Background Styles */
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+        body { background: #0a192f; color: #fff; overflow-x: hidden; line-height: 1.6; }
+        #particles-js { position: fixed; width: 100%; height: 100%; top: 0; left: 0; z-index: -1; }
+
+        /* Navbar styles */
+        .navbar { display: flex; justify-content: space-between; align-items: center; padding: 20px 40px; width: 100%; position: absolute; top: 0; left: 0; z-index: 100; }
+        .navbar-brand { font-size: 2rem; font-weight: 700; color: #fff; text-decoration: none; }
+        .navbar-nav { list-style: none; display: flex; gap: 25px; }
+        .nav-link { color: #fff; text-decoration: none; font-size: 1.1rem; padding: 5px 10px; border-radius: 5px; transition: background 0.3s ease; }
+        .nav-link:hover, .nav-link.active { background: rgba(255, 255, 255, 0.2); }
+
+        /* Main Content Container */
+        .page-content { min-height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 120px 20px 20px; text-align: center; }
+        .dashboard-container { width: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+        .dashboard-title { font-size: 3rem; margin-bottom: 40px; font-weight: 300; letter-spacing: 2px; }
+
+        /* Role Selection Card Styles */
+        .role-selection-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 30px; max-width: 1000px; width: 100%; }
+        .role-card { background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 15px; padding: 30px; text-align: center; text-decoration: none; color: #fff; backdrop-filter: blur(10px); transition: transform 0.3s ease, background 0.3s ease; cursor: pointer; }
+        .role-card:hover { transform: translateY(-10px); background: rgba(255, 255, 255, 0.2); }
+        .card-icon span { font-size: 4rem; line-height: 1; }
+        .role-card h3 { margin-top: 20px; font-size: 1.5rem; font-weight: 400; }
+
+        /* Form container and styles */
+        .form-container {
+            background-color: rgba(23, 49, 85, 0.8);
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            width: 100%;
+            max-width: 400px;
+            display: none; /* Initially hidden */
+            backdrop-filter: blur(10px);
+        }
+        .form-container h2 { margin-bottom: 20px; color: #64ffda; }
+        .form-container input[type="text"],
+        .form-container input[type="password"] {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            border: 1px solid #4f6d8f;
+            background-color: #0a192f;
+            color: #fff;
+            font-size: 1rem;
+        }
+        .form-container .password-wrapper { position: relative; }
+        .form-container .toggle-password {
+            position: absolute;
+            top: 50%;
+            right: 15px;
+            transform: translateY(-80%);
+            cursor: pointer;
+            color: #000000;
+        }
+        .form-container .form-actions { display: flex; justify-content: space-between; gap: 10px; }
+        .form-container button {
+            padding: 12px 20px;
+            border-radius: 5px;
+            border: 1px solid #64ffda;
+            cursor: pointer;
+            font-size: 1rem;
+            flex-grow: 1;
+        }
+        .form-container button[type="submit"] { background-color: #64ffda; color: #0a192f; }
+        .form-container .switch-btn { background-color: transparent; color: #64ffda; }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+    <div id="particles-js"></div>
+    <nav class="navbar">
+        <a href="/" class="navbar-brand">AIOPharmacy</a>
+        <ul class="navbar-nav">
+            <li><a href="/contact" class="nav-link">Contact Us</a></li>
+        </ul>
+    </nav>
+    <div class="page-content">
+        <div id="role-selection-container" class="dashboard-container">
+            <h1 class="dashboard-title">Sign In As</h1>
+            <div class="role-selection-grid">
+                <a href="#" class="role-card">
+                    <div class="card-icon"><span>&#128100;</span></div><h3>Users</h3>
+                </a>
+                <a href="#" class="role-card">
+                    <div class="card-icon"><span>&#9877;</span></div><h3>Pharmacists</h3>
+                </a>
+                <a href="#" class="role-card">
+                    <div class="card-icon"><span>&#127973;</span></div><h3>Hospitals</h3>
+                </a>
+                <a href="#" class="role-card">
+                    <div class="card-icon"><span>&#128666;</span></div><h3>Vendors</h3>
+                </a>
+            </div>
+        </div>
+        <div id="form-container" class="form-container">
+            <form id="login-form" method="post">
+                <h2>Welcome Back!</h2>
+                <input type="text" name="username_login" placeholder="Username" required>
+                <div class="password-wrapper">
+                    <input type="password" name="password_login" placeholder="Password" required id="login-password">
+                    <span class="toggle-password" onclick="togglePasswordVisibility('login-password', this)">Show</span>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" name="login_submit">Login</button>
+                    <button type="button" id="switch-to-signup" class="switch-btn">Sign Up</button>
+                </div>
+            </form>
+            <form id="signup-form" class="hidden" method="post">
+                <h2>Create Your Account</h2>
+                <input type="text" name="username" placeholder="Username" required>
+                <div class="password-wrapper">
+                    <input type="password" name="password" placeholder="Password" required id="signup-password">
+                    <span class="toggle-password" onclick="togglePasswordVisibility('signup-password', this)">Show</span>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" name="signup_submit">Create Account</button>
+                    <button type="button" id="switch-to-login" class="switch-btn">Login</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            particlesJS('particles-js', {"particles":{"number":{"value":80,"density":{"enable":true,"value_area":800}},"color":{"value":"#ffffff"},"shape":{"type":"circle"},"opacity":{"value":0.5,"random":false},"size":{"value":3,"random":true},"line_linked":{"enable":true,"distance":150,"color":"#ffffff","opacity":0.4,"width":1},"move":{"enable":true,"speed":6,"direction":"none","out_mode":"out"}},"interactivity":{"detect_on":"canvas","events":{"onhover":{"enable":true,"mode":"repulse"},"onclick":{"enable":true,"mode":"push"},"resize":true},"modes":{"repulse":{"distance":200,"duration":0.4},"push":{"particles_nb":4}}},"retina_detect":true});
+            const roleCards = document.querySelectorAll('.role-card');
+            const roleSelectionContainer = document.getElementById('role-selection-container');
+            const formContainer = document.getElementById('form-container');
+            roleCards.forEach(card => {
+                card.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    roleSelectionContainer.style.display = 'none';
+                    formContainer.style.display = 'block';
+                });
+            });
+        });
+        function togglePasswordVisibility(inputId, toggleElement) {
+            const passwordInput = document.getElementById(inputId);
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                toggleElement.textContent = 'Hide';
+            } else {
+                passwordInput.type = 'password';
+                toggleElement.textContent = 'Show';
+            }
+        }
+        const switchToSignupBtn = document.getElementById('switch-to-signup');
+        const switchToLoginBtn = document.getElementById('switch-to-login');
+        const loginForm = document.getElementById('login-form');
+        const signupForm = document.getElementById('signup-form');
+        switchToSignupBtn.addEventListener('click', () => {
+            loginForm.classList.add('hidden');
+            signupForm.classList.remove('hidden');
+        });
+        switchToLoginBtn.addEventListener('click', () => {
+            signupForm.classList.add('hidden');
+            loginForm.classList.remove('hidden');
+        });
+    </script>
+</body>
+</html>

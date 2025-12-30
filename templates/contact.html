@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}Contact Us{% endblock %}
+
+{% block content %}
+    <section class="hero">
+        <h1>Contact Us</h1>
+    </section>
+
+    <div class="container">
+        <form id="contact-form" class="contact-form">
+            <input type="text" name="name" placeholder="Your Name" required>
+            <input type="email" name="email" placeholder="Your Email" required>
+            <textarea name="message" placeholder="Your Message" rows="6" required></textarea>
+            <button type="submit">Send Message</button>
+        </form>
+        <p id="status-message" style="text-align: center; margin-top: 15px;"></p>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+<script type="text/javascript"
+        src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+
+<script type="text/javascript">
+    // Initialize EmailJS with your User ID
+    (function(){
+        emailjs.init("o-kcIIAOz9XaFZvjb"); // <-- PASTE YOUR USER ID HERE
+    })();
+
+    document.getElementById('contact-form').addEventListener('submit', function(event) {
+        event.preventDefault(); // Prevent the default form submission
+
+        const form = this;
+        const statusMessage = document.getElementById('status-message');
+        const submitButton = form.querySelector('button');
+
+        // Change button text to show it's working
+        submitButton.textContent = 'Sending...';
+
+        // These IDs from the previous steps
+        const serviceID = 'service_egbq3hb'; // <-- PASTE YOUR SERVICE ID HERE
+        const templateID = 'template_udp9xym'; // <-- PASTE YOUR TEMPLATE ID HERE
+
+        emailjs.sendForm(serviceID, templateID, form)
+            .then(() => {
+                statusMessage.textContent = 'Message sent successfully!';
+                statusMessage.style.color = 'green';
+                submitButton.textContent = 'Send Message';
+                form.reset();
+            }, (err) => {
+                statusMessage.textContent = 'Failed to send message. Error: ' + JSON.stringify(err);
+                statusMessage.style.color = 'red';
+                submitButton.textContent = 'Send Message';
+            });
+    });
+</script>
+{% endblock %}

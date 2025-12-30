@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AIOPharmacy - {% block title %}{% endblock %}</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    
+    {% block styles %}{% endblock %}
+</head>
+<body>
+    <div id="particles-js"></div>
+
+    <div id="animated-character" data-aos="fade-right" data-aos-delay="1000">
+        <img src="{{ url_for('static', filename='doc.gif') }}" alt="Animated Doctor">
+    </div>
+
+    <header class="main-header">
+        <nav id="main-nav">
+            <a href="{{ url_for('home') }}" class="nav-logo">
+                <svg class="aio-logo" viewBox="0 0 200 50" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <linearGradient id="brandGradient" x1="0" y1="0" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#00aaff"/>
+                            <stop offset="100%" stop-color="#0077cc"/>
+                        </linearGradient>
+                    </defs>
+                    
+                    <g transform="translate(0, 5)">
+                        <path d="M20 0L37.32 10V30L20 40L2.68 30V10L20 0Z" fill="url(#brandGradient)"/>
+                        <path d="M20 8V32M8 20H32" stroke="#0d1b2a" stroke-width="5" stroke-linecap="round"/>
+                        <circle cx="35" cy="35" r="3" fill="#40c4ff"/>
+                    </g>
+
+                    <text x="50" y="35" font-family="'Poppins', sans-serif" font-weight="700" font-size="22" fill="#ffffff" letter-spacing="1">
+                        AIO
+                    </text>
+                    
+                    <text x="105" y="35" font-family="'Poppins', sans-serif" font-weight="300" font-size="22" fill="#a7a9be">
+                        Pharmacy
+                    </text>
+                </svg>
+            </a>
+            
+            <div class="nav-links">
+                <a href="{{ url_for('home') }}" class="{{ 'active' if request.endpoint == 'home' else '' }}">Home</a>
+                
+                {% if current_user.is_authenticated %}
+                    <a href="{{ url_for('dashboard_page') }}" class="{{ 'active' if request.endpoint == 'dashboard_page' else '' }}">Med Analyzer</a>
+                    <a href="{{ url_for('recommender_page') }}" class="{{ 'active' if request.endpoint == 'recommender_page' else '' }}">Med Recommender</a>
+                    <a href="{{ url_for('medicines_page') }}" class="{{ 'active' if request.endpoint == 'medicines_page' else '' }}">Medicines</a>
+                    <a href="{{ url_for('pharmacy_finder_page') }}" class="{{ 'active' if request.endpoint == 'pharmacy_finder_page' else '' }}">Find Pharmacies</a>
+                    <a href="{{ url_for('contact_page') }}" class="{{ 'active' if request.endpoint == 'contact_page' else '' }}">Contact</a>
+                
+                {% else %}
+                    <a href="{{ url_for('medicines_showcase_page') }}" class="{{ 'active' if request.endpoint == 'medicines_showcase_page' else '' }}">Medicines</a>
+                {% endif %}
+            </div>
+
+            <div class="user-actions">
+                {% if current_user.is_authenticated %}
+                    <span class="nav-user">Hello, {{ current_user.username }}</span>
+                    <a href="{{ url_for('logout') }}" class="logout-button">Logout</a>
+                {% else %}
+                    <a href="{{ url_for('login_page') }}" class="login-button">Login/Sign Up</a>
+                {% endif %}
+            </div>
+
+            <a href="javascript:void(0);" class="mobile-toggle" id="mobile-menu-toggle">
+                <i class="fas fa-bars"></i>
+            </a>
+        </nav>
+    </header>
+
+    <main class="page-wrapper">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flash-messages" data-aos="fade-down">
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+        
+        {% block content %}{% endblock %}
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+    
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    
+    <script>
+        // Initialize AOS
+        AOS.init({
+            duration: 800,  
+            once: true,     
+            offset: 100,    
+            easing: 'ease-out-cubic',
+        });
+
+        // This script is for the background particles
+        particlesJS('particles-js',
+          { "particles": { "number": { "value": 80, "density": { "enable": true, "value_area": 800 } }, "color": { "value": "#00aaff" }, "shape": { "type": "circle" }, "opacity": { "value": 0.5, "random": false }, "size": { "value": 3, "random": true }, "line_linked": { "enable": true, "distance": 150, "color": "#00aaff", "opacity": 0.4, "width": 1 }, "move": { "enable": true, "speed": 6, "direction": "none", "random": false, "straight": false, "out_mode": "out", "bounce": false } }, "interactivity": { "detect_on": "window", "events": { "onhover": { "enable": true, "mode": "grab" }, "onclick": { "enable": true, "mode": "push" }, "resize": true }, "modes": { "grab": { "distance": 200, "line_linked": { "opacity": 1 } }, "push": { "particles_nb": 4 } } }, "retina_detect": true }
+        );
+    </script>
+    
+    {% block scripts %}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const toggleBtn = document.getElementById('mobile-menu-toggle');
+            const mainNav = document.getElementById('main-nav');
+
+            if (toggleBtn && mainNav) {
+                toggleBtn.addEventListener('click', function() {
+                    mainNav.classList.toggle('responsive');
+                });
+            }
+        });
+    </script>
+    {% endblock %}
+</body>
+</html>

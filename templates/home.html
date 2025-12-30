@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block title %}Welcome{% endblock %}
+
+{% block content %}
+    <section class="hero">
+        <h1 data-aos="fade-down" data-aos-duration="1000">
+            Empowering Healthcare Decisions with AI
+        </h1>
+        <p class="subtitle" data-aos="fade-up" data-aos-delay="200">
+            Democratizing Access to Pharmaceutical Information
+        </p>
+        <p class="description" data-aos="fade-up" data-aos-delay="400">
+            AIOPharmacy bridges the gap between medical complexity and user understanding. 
+            Powered by advanced <strong>Natural Language Processing (NLP)</strong>, we provide instant symptom analysis, 
+            smart medicine substitutes, and real-time pharmacy navigation in one intelligent ecosystem.
+        </p>
+        
+        <div style="margin-top: 30px;" data-aos="zoom-in" data-aos-delay="600">
+            <a href="{{ url_for('recommender_page') }}" class="cta-button glow-effect">
+                Start AI Diagnosis <i class="fas fa-arrow-right" style="margin-left: 8px;"></i>
+            </a>
+        </div>
+    </section>
+
+    <section class="features">
+        <h2 data-aos="fade-right">Our Intelligent Ecosystem</h2>
+        <div class="feature-grid">
+            
+            <div class="feature-card" data-aos="fade-up" data-aos-delay="100">
+                <div class="feature-icon floating-icon">🧠</div>
+                <h3>AI Symptom Analysis</h3>
+                <p>
+                    Describe symptoms in your own words or use <strong>Voice Recognition</strong>. 
+                    Our NLP algorithms analyze context to recommend the most accurate treatments instantly.
+                </p>
+            </div>
+
+            <div class="feature-card" data-aos="fade-up" data-aos-delay="200">
+                <div class="feature-icon floating-icon" style="animation-delay: 0.5s;">🔄</div>
+                <h3>Smart Substitutes</h3>
+                <p>
+                    Make cost-effective decisions by discovering scientifically matched brand alternatives 
+                    and generic equivalents from our comprehensive database.
+                </p>
+            </div>
+
+            <div class="feature-card" data-aos="fade-up" data-aos-delay="300">
+                <div class="feature-icon floating-icon" style="animation-delay: 1s;">📊</div>
+                <h3>Med Analytics</h3>
+                <p>
+                    Visualize healthcare trends with our interactive dashboard. 
+                    Analyze medicine distribution, condition prevalence, and demographic insights via dynamic charts.
+                </p>
+            </div>
+
+            <div class="feature-card" data-aos="fade-up" data-aos-delay="400">
+                <div class="feature-icon floating-icon" style="animation-delay: 1.5s;">📍</div>
+                <h3>Geo-Smart Locator</h3>
+                <p>
+                    Find essential supplies when it matters most. 
+                    Our real-time GPS locator calculates the fastest routes to nearby pharmacies with live navigation support.
+                </p>
+            </div>
+        </div>
+    </section>
+{% endblock %}

@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Medicines Showcase{% endblock %}
+
+{% block content %}
+<section class="hero">
+    <h1>Medicines Showcase</h1>
+    <p class="subtitle">A sample of the medicines available in our database.</p>
+</section>
+
+<div class="container">
+    <div class="medicine-grid">
+        {% if medicines %}
+            {% for med in medicines %}
+                <div class="medicine-list-card">
+                    <h3>{{ med['name'] }}</h3>
+                    <p>{{ med['description'] }}</p>
+                    <p><strong>Reason for Use:</strong> {{ med['reason'] }}</p>
+                    <p><strong>Age Group:</strong> {{ med['age_group'] }}</p>
+                </div>
+            {% endfor %}
+        {% else %}
+            <p>No medicines to display at the moment.</p>
+        {% endif %}
+    </div>
+
+    <div class="showcase-cta">
+        <p>Want to see more and get personalized recommendations?</p>
+        <a href="{{ url_for('login_page') }}" class="cta-button">Sign Up to Explore</a>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,33 @@
+
+# Virtual environment
+venv/
+epicaio/
+ENV/
+
+# Model files
+*.pkl
+*.npz
+processed_data.pkl
+tfidf_vectorizer.pkl
+tfidf_matrix.npz
+
+# User data and secrets
+users.json
+static/emailjs-config.js
+
+# IDE specific files
+.vscode/
+.idea/
+*.swp
+
+# OS specific files
+.DS_Store
+Thumbs.db
+
+chroma_db/
+
+# Data & Model Files
+*.pkl
+*.npz
+
+__pycache__

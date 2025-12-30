@@ -1,0 +1,12 @@
+Flask
+Flask-Cors
+Flask-Login
+pandas
+plotly
+scikit-learn
+numpy<2.0.0
+scipy
+sentence-transformers
+chromadb
+torch
+wrapt

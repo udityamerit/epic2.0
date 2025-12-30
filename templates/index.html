@@ -1,0 +1,262 @@
+{% extends "base.html" %}
+{% block title %}Medicine Recommender{% endblock %}
+
+{% block content %}
+    <style>
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease;
+            cursor: pointer;
+        }
+
+        .modal-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            background: #2c3e50;
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            color: #ecf0f1;
+            font-size: 1.2em;
+            font-weight: 600;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
+            cursor: default;
+        }
+        
+        .modal-overlay.show .modal-content {
+            transform: scale(1);
+        }
+
+        #audio-visualizer {
+            display: block;
+            margin-bottom: 15px;
+        }
+
+        /* ======================================= */
+        /* == THIS IS THE FIX FOR THE HOVER EFFECT == */
+        /* ======================================= */
+        #mic-btn {
+            color: #00cefc; /* A clear default color for the icon */
+            transition: transform 0.2s ease, color 0.2s ease;
+        }
+        #mic-btn:hover {
+            opacity: 1 !important; /* Prevents it from fading out */
+            transform: scale(2.05); /* Makes the icon slightly larger */
+            color: #1aff00; /* Changes the icon color to blue */
+        }
+        /* ======================================= */
+
+    </style>
+
+    <div id="listening-modal" class="modal-overlay">
+        <div class="modal-content">
+            <canvas id="audio-visualizer" width="400" height="250"></canvas>
+            <p>Listening...</p>
+        </div>
+    </div>
+    <section class="hero">
+        <h1>AIOPharmacy Medicine Recommender</h1>
+    </section>
+
+    <div class="animation-container" style="text-align: center; margin-bottom: 20px;">
+    <img src="{{ url_for('static', filename='scanning.gif') }}" alt="Scanning Animation" style="width: 300px; height: auto;">
+</div>
+        <form id="search-form" action="/recommender" method="post">
+            <input type="text" name="query" placeholder="e.g., 'headache' or 'Crocin'" value="{{ query if query else '' }}" required>
+            
+            <button type="button" id="mic-btn" style="padding: 10px; background: none; border: none; cursor: pointer; font-size: 1.2em;">
+                <i class="fas fa-microphone"></i>
+            </button>
+            <button type="submit">Search</button>
+        </form>
+
+        {% if recommendation %} <div class="results">
+                <h2>Best Match Found</h2>
+                <div class="medicine-card">
+                    <h3>{{ recommendation['name'] }}</h3>
+                    <p><strong>Description:</strong> {{ recommendation['description'] }}</p>
+                    <p><strong>Reason for Use:</strong> {{ recommendation['reason'] }}</p>
+                    <p><strong>Age Group:</strong> {{ recommendation['age_group'] }}</p>
+                </div>
+
+                {% if substitutes %}
+                    <h2>Available Brand Substitutes</h2>
+                    <ul class="substitutes-list">
+                        {% for sub in substitutes %}
+                            {% if sub %} <li>{{ sub }}</li>
+                            {% endif %}
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p class="no-substitutes">No brand substitutes listed for this medicine.</p>
+                {% endif %}
+
+                {% if other_recommendations %} <div class="show-alternatives">
+                        <button id="toggle-alternatives">Show Other Similar Medicines</button>
+                    </div>
+
+                    <div id="alternatives-section" style="display: none;">
+                        <h2>Other Similar Medicines</h2>
+                        {% for row in other_recommendations %}
+                            <div class="medicine-card-small">
+                                <h3>{{ row['name'] }}</h3>
+                                <p><strong>Description:</strong> {{ row['description'] }}</p>
+                                <p><strong>Reason for Use:</strong> {{ row['reason'] }}</p>
+                                <p><strong>Age Group:</strong> {{ row['age_group'] }}</p>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+        {% elif error %}
+            <p class="error">{{ error }}</p>
+        {% endif %}
+    </div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script> 
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const searchForm = document.querySelector('#search-form');
+        const searchInput = searchForm.querySelector('input[name="query"]');
+        const micBtn = document.querySelector('#mic-btn');
+        const micIcon = micBtn.querySelector('i');
+        const listeningModal = document.getElementById('listening-modal');
+
+        if ('webkitSpeechRecognition' in window) {
+            const recognition = new webkitSpeechRecognition();
+            let isListening = false;
+            
+            let audioContext;
+            let analyser;
+            let source;
+            let animationFrameId;
+            let audioStream;
+            const canvas = document.getElementById('audio-visualizer');
+            const canvasCtx = canvas.getContext('2d');
+
+            recognition.continuous = true;
+            recognition.interimResults = true;
+            recognition.lang = 'en-US';
+            
+            listeningModal.addEventListener('click', () => {
+                if (isListening) {
+                    recognition.stop();
+                }
+            });
+
+            micBtn.addEventListener('click', () => {
+                if (!isListening) {
+                    recognition.start();
+                }
+            });
+
+            recognition.onstart = () => {
+                isListening = true;
+                micIcon.style.color = '#ff5733';
+                listeningModal.classList.add('show');
+                initVisualizer();
+            };
+
+            recognition.onend = () => {
+                isListening = false;
+                micIcon.style.color = '';
+                listeningModal.classList.remove('show');
+                stopVisualizer();
+            };
+
+            recognition.onresult = (event) => {
+                let final_transcript = '';
+                for (let i = event.resultIndex; i < event.results.length; ++i) {
+                    if (event.results[i].isFinal) {
+                        final_transcript += event.results[i][0].transcript;
+                    }
+                }
+                if (final_transcript) {
+                    searchInput.value = final_transcript;
+                    recognition.stop();
+                    setTimeout(() => searchForm.submit(), 300);
+                }
+            };
+
+            recognition.onerror = (event) => {
+                console.error('Speech recognition error:', event.error);
+            };
+            
+            function initVisualizer() {
+                navigator.mediaDevices.getUserMedia({ audio: true })
+                    .then(stream => {
+                        audioStream = stream;
+                        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                        analyser = audioContext.createAnalyser();
+                        source = audioContext.createMediaStreamSource(stream);
+                        source.connect(analyser);
+                        analyser.fftSize = 256;
+                        const bufferLength = analyser.frequencyBinCount;
+                        const dataArray = new Uint8Array(bufferLength);
+                        drawVisualizer(dataArray, bufferLength);
+                    })
+                    .catch(err => {
+                        console.error('Error accessing microphone for visualizer:', err);
+                    });
+            }
+
+            function drawVisualizer(dataArray, bufferLength) {
+                analyser.getByteFrequencyData(dataArray);
+                canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
+                const barWidth = (canvas.width / bufferLength) * 2;
+                let x = 0;
+                for (let i = 0; i < bufferLength; i++) {
+                    const barHeight = dataArray[i] / 2;
+                    const r = 150 + (barHeight / 2);
+                    const g = 200 - barHeight;
+                    const b = 255;
+                    canvasCtx.fillStyle = `rgb(${r}, ${g}, ${b})`;
+                    canvasCtx.beginPath();
+                    canvasCtx.arc(x, canvas.height - barHeight, barWidth / 2, 0, 2 * Math.PI);
+                    canvasCtx.fill();
+                    x += barWidth + 1;
+                }
+                animationFrameId = requestAnimationFrame(() => drawVisualizer(dataArray, bufferLength));
+            }
+            
+            function stopVisualizer() {
+                if (animationFrameId) cancelAnimationFrame(animationFrameId);
+                if (audioStream) audioStream.getTracks().forEach(track => track.stop());
+                if (audioContext) audioContext.close();
+            }
+
+        } else {
+            micBtn.style.display = 'none';
+        }
+
+        document.getElementById('toggle-alternatives')?.addEventListener('click', function() {
+            var alternatives = document.getElementById('alternatives-section');
+            if (alternatives.style.display === 'none') {
+                alternatives.style.display = 'block';
+                this.textContent = 'Hide Other Medicines';
+            } else {
+                alternatives.style.display = 'none';
+                this.textContent = 'Show Other Similar Medicines';
+            }
+        });
+    });
+</script>
+{% endblock %}

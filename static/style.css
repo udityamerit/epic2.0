@@ -1,0 +1,782 @@
+/* --- Universal Styles & Variables --- */
+:root {
+    --primary-bg: #0d1b2a;
+    --container-bg: rgba(21, 30, 42, 0.85);
+    --card-bg: rgba(27, 38, 59, 0.75);
+    --accent-color: #00aaff;
+    --text-primary: #e0e1dd;
+    --text-secondary: #a7a9be;
+    --border-color: rgba(0, 170, 255, 0.2);
+}
+
+/* CRITICAL FIX: This ensures padding fits INSIDE the width */
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: var(--primary-bg);
+    color: var(--text-primary);
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+}
+
+#particles-js {
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    z-index: -1;
+}
+
+/* ========================================= */
+/* ==   UNIVERSAL NAVIGATION BAR           == */
+/* ========================================= */
+
+/* 1. Main Header Container */
+.main-header {
+    width: 100%;
+    height: 80px; /* Fixed height for stability */
+    padding: 0 5%; /* Horizontal padding only */
+    background: rgba(10, 25, 47, 0.95); 
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(135, 206, 250, 0.2);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+    display: flex;
+    align-items: center; /* Vertically center everything */
+    -webkit-backdrop-filter: blur(10px);
+}
+
+/* 2. Nav Layout Wrapper */
+.main-header nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    max-width: 1400px;
+    margin: 0 auto;
+    height: 100%; /* Take full height of header */
+}
+
+/* 3. Logo Styling */
+.nav-logo {
+    font-size: 24px;
+    font-weight: 700;
+    color: #FFFFFF;
+    text-decoration: none;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.4);
+    transition: color 0.3s ease;
+    flex-shrink: 0; /* Prevent logo from squishing */
+}
+
+.nav-logo:hover {
+    color: #40c4ff;
+}
+
+/* 4. Navigation Links (Center) */
+.nav-links {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 30px;
+    flex-grow: 1;
+    height: 100%;
+}
+
+.nav-links a {
+    font-size: 16px;
+    font-weight: 500;
+    color: #cbd5e1;
+    text-decoration: none;
+    padding: 5px 0;
+    position: relative;
+    transition: color 0.3s ease;
+}
+
+.nav-links a::after {
+    content: '';
+    position: absolute;
+    bottom: -5px; /* Position underline */
+    left: 0;
+    width: 0;
+    height: 2px;
+    background-color: var(--accent-color);
+    transition: width 0.3s ease;
+}
+
+.nav-links a:hover,
+.nav-links a.active {
+    color: #FFFFFF;
+}
+
+.nav-links a:hover::after,
+.nav-links a.active::after {
+    width: 100%;
+}
+
+/* 5. User Actions (Right) */
+.user-actions {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex-shrink: 0;
+}
+
+.user-actions .nav-user {
+    font-size: 14px;
+    font-weight: 500;
+    color: #ffffff;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+    white-space: nowrap;
+}
+
+.user-actions .login-button,
+.user-actions .logout-button {
+    display: inline-block;
+    background-color: var(--accent-color);
+    color: #FFFFFF !important;
+    text-decoration: none;
+    padding: 8px 20px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    border: none;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    transition: all 0.3s ease;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.user-actions .login-button:hover,
+.user-actions .logout-button:hover {
+    background-color: #33bbff;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    transform: translateY(-2px);
+}
+
+/* 6. Mobile Toggle */
+.mobile-toggle {
+    display: none;
+    font-size: 24px;
+    color: #FFFFFF;
+    text-decoration: none;
+    padding: 10px;
+    cursor: pointer;
+}
+
+/* ========================================= */
+/* ==   RESPONSIVE NAVBAR (Mobile/Tablet) == */
+/* ========================================= */
+@media screen and (max-width: 1024px) {
+    .nav-links, .user-actions {
+        display: none;
+    }
+    .mobile-toggle {
+        display: block;
+    }
+    
+    /* Expanded State */
+    .main-header nav.responsive {
+        flex-wrap: wrap;
+    }
+
+    /* Dropdown Menu Style */
+    .main-header nav.responsive .nav-links,
+    .main-header nav.responsive .user-actions {
+        display: flex;
+        flex-direction: column;
+        width: 100%; /* Full width drop down */
+        text-align: left;
+        background: #0d1b2a; /* Match body bg */
+        padding: 0;
+        order: 3;
+        border-top: 1px solid rgba(135, 206, 250, 0.2);
+        position: absolute; /* Take out of flow */
+        top: 80px; /* Push below header */
+        left: 0;
+        right: 0;
+    }
+    
+    /* Separate user actions visually */
+    .main-header nav.responsive .user-actions {
+        top: auto; /* Let it stack naturally if needed, or fix position */
+        position: static;
+        background: #0b1622;
+        padding: 20px 5%;
+        border-top: none;
+    }
+
+    .main-header nav.responsive .nav-links {
+        position: static; /* Stack under header inside the flex container */
+        padding: 10px 0;
+    }
+
+    .main-header nav.responsive .nav-links a {
+        padding: 15px 5%;
+        width: 100%;
+        display: block;
+        border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    
+    .main-header nav.responsive .nav-links a::after { display: none; }
+
+    .main-header nav.responsive .user-actions .login-button,
+    .main-header nav.responsive .user-actions .logout-button {
+        width: 100%;
+        text-align: center;
+    }
+}
+
+/* --- General Page Wrapper --- */
+.page-wrapper {
+    max-width: 1200px;
+    margin: 0 auto;
+    /* Padding top accounts for the fixed header (80px) + spacing (40px) */
+    padding: 120px 20px 40px 20px;
+    position: relative;
+    z-index: 2;
+    min-height: calc(100vh - 80px);
+}
+
+.container {
+    padding: 40px;
+    background-color: var(--container-bg);
+    border-radius: 15px;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+    backdrop-filter: blur(10px);
+}
+
+/* --- Hero Section --- */
+.hero {
+    text-align: center;
+    margin-bottom: 60px;
+}
+
+.hero h1 {
+    font-size: 3.5rem;
+    font-weight: 700;
+    color: var(--accent-color);
+    margin-bottom: 0.5rem;
+    /* Animation is now handled by AOS, old keyframe removed to avoid conflict */
+    line-height: 1.2;
+}
+
+.hero .subtitle {
+    font-size: 1.25rem;
+    color: var(--text-primary);
+    margin-bottom: 1.5rem;
+}
+
+.hero .description {
+    max-width: 700px;
+    margin: 0 auto 2.5rem;
+    color: var(--text-secondary);
+    line-height: 1.6;
+}
+
+/* NEW: Glow Effect for CTA */
+@keyframes pulse-glow {
+    0% { box-shadow: 0 0 0 0 rgba(0, 170, 255, 0.4); }
+    70% { box-shadow: 0 0 0 15px rgba(0, 170, 255, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(0, 170, 255, 0); }
+}
+
+.cta-button {
+    display: inline-block;
+    padding: 15px 35px;
+    background-color: var(--accent-color);
+    color: var(--primary-bg);
+    border: 2px solid var(--accent-color);
+    border-radius: 50px; /* Rounded Pill Shape */
+    font-size: 1.1em;
+    font-weight: 700;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.cta-button:hover {
+    background-color: transparent;
+    color: var(--accent-color);
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0, 170, 255, 0.4);
+}
+
+.cta-button.glow-effect {
+    animation: pulse-glow 2s infinite;
+}
+
+/* --- Homepage Features --- */
+.features {
+    padding: 60px 40px;
+    margin-top: 40px;
+    background-color: var(--container-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 15px;
+    /* Remove old fadeIn animation to let AOS take over */
+}
+
+.features h2 {
+    font-size: 2.5em;
+    margin-bottom: 1em;
+    color: var(--text-primary);
+    text-align: center;
+}
+
+.feature-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 30px;
+    margin-top: 2em;
+}
+
+.feature-card {
+    background-color: var(--card-bg);
+    padding: 30px;
+    border-radius: 15px;
+    border-bottom: 3px solid transparent;
+    transition: all 0.3s ease;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Fantastic Hover Effect for Cards */
+.feature-card:hover {
+    transform: translateY(-15px) !important; /* Override AOS transform if needed */
+    border-color: var(--accent-color);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+    background-color: rgba(30, 45, 70, 0.9);
+}
+
+/* NEW: Floating Icon Animation */
+@keyframes floating {
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+    100% { transform: translateY(0px); }
+}
+
+.feature-icon {
+    font-size: 3.5em;
+    margin-bottom: 0.5em;
+    color: var(--accent-color);
+    display: inline-block;
+}
+
+.feature-icon.floating-icon {
+    animation: floating 3s ease-in-out infinite;
+}
+
+/* --- Forms --- */
+form { display: flex; gap: 15px; margin-bottom: 0; }
+
+input[type="text"], input[type="email"], input[type="password"], textarea, select {
+    width: 100%;
+    padding: 15px 20px;
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 1rem;
+    color: var(--text-primary);
+    font-family: 'Poppins', sans-serif;
+    transition: border-color 0.3s;
+}
+
+input:focus, textarea:focus, select:focus {
+    outline: none;
+    border-color: var(--accent-color);
+}
+
+textarea { resize: vertical; }
+
+button { 
+    padding: 15px 30px; 
+    background-color: transparent; 
+    color: var(--accent-color); 
+    border: 2px solid var(--accent-color); 
+    border-radius: 8px; 
+    cursor: pointer; 
+    font-size: 1em; 
+    font-weight: 600; 
+    transition: all 0.3s ease; 
+}
+
+button:hover { 
+    background-color: var(--accent-color); 
+    color: var(--primary-bg); 
+    transform: scale(1.02); 
+}
+
+/* --- Login/Sign up Page --- */
+.form-container {
+    max-width: 450px;
+    margin: 0 auto;
+    background: var(--card-bg);
+    padding: 40px;
+    border-radius: 15px;
+    border: 1px solid var(--border-color);
+}
+
+.form-container h2 {
+    text-align: center;
+    margin-bottom: 30px;
+    color: var(--text-primary);
+}
+
+.form-actions {
+    display: flex;
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.form-actions button[type="submit"] {
+    flex-grow: 1;
+    background-color: var(--accent-color);
+    color: white;
+}
+.form-actions button[type="submit"]:hover {
+    background-color: #33bbff;
+}
+
+
+.switch-btn {
+    width: 100%;
+    margin-top: 10px;
+    text-align: center;
+    font-size: 0.9em;
+    color: var(--text-secondary);
+    border: none;
+}
+.switch-btn:hover {
+    color: white;
+    background: transparent;
+    text-decoration: underline;
+    transform: none;
+}
+
+
+.hidden { display: none; }
+.form-container form { flex-direction: column; }
+.contact-form { flex-direction: column; }
+
+/* --- Medicines Page --- */
+.medicine-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); 
+    gap: 25px;
+}
+
+.medicine-list-card {
+    background-color: var(--card-bg);
+    padding: 25px;
+    border-radius: 10px;
+    text-align: center;
+    border: 1px solid rgba(0, 170, 255, 0.15);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.medicine-list-card:hover {
+    transform: translateY(-5px);
+    border-color: var(--accent-color);
+    box-shadow: 0 8px 25px rgba(0, 170, 255, 0.15);
+}
+
+/* --- Showcase CTA --- */
+.showcase-cta {
+    text-align: center;
+    margin-top: 4rem;
+    padding: 3rem;
+    background: rgba(0, 170, 255, 0.05);
+    border-radius: 15px;
+    border: 1px solid rgba(0, 170, 255, 0.1);
+}
+
+.showcase-cta p {
+    margin-top: 0;
+    margin-bottom: 1.5rem;
+    font-size: 1.2em;
+    font-weight: 500;
+}
+
+/* --- Recommender Page --- */
+.results { margin-top: 40px; }
+.results h2 { 
+    color: var(--text-primary); 
+    border-bottom: 1px solid var(--border-color); 
+    padding-bottom: 15px; 
+    margin-bottom: 25px; 
+}
+
+.medicine-card, .medicine-card-small {
+    background-color: var(--card-bg);
+    padding: 30px;
+    border-radius: 12px;
+    margin-bottom: 30px;
+    border-left: 4px solid var(--accent-color);
+    transition: all 0.3s ease;
+}
+
+.medicine-card:hover, .medicine-card-small:hover {
+    transform: translateX(5px);
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+}
+
+.medicine-card h3 { margin-top: 0; color: var(--accent-color); font-size: 1.5rem; }
+
+.substitutes-list { list-style-type: none; padding: 0; }
+.substitutes-list li { 
+    background-color: rgba(0,0,0,0.2); 
+    padding: 15px; 
+    border: 1px solid var(--border-color); 
+    border-radius: 8px; 
+    margin-bottom: 10px; 
+    transition: all 0.3s ease; 
+}
+.substitutes-list li:hover { 
+    border-color: var(--accent-color); 
+    transform: translateX(5px); 
+}
+
+.error { 
+    color: #ff5252; 
+    background-color: rgba(255, 82, 82, 0.1); 
+    text-align: center; 
+    font-size: 1.1em; 
+    padding: 20px; 
+    border-radius: 8px; 
+    border: 1px solid rgba(255, 82, 82, 0.3); 
+}
+
+.show-alternatives { text-align: center; margin: 30px 0; }
+#toggle-alternatives { 
+    background-color: var(--card-bg); 
+    color: var(--text-secondary); 
+    border: 1px solid var(--border-color); 
+    padding: 12px 25px; 
+    border-radius: 8px; 
+    cursor: pointer; 
+}
+.medicine-card-small { 
+    border-left: 1px solid var(--border-color);
+}
+.medicine-card-small h3 { margin-top: 0; color: var(--text-primary); font-size: 1.2rem; }
+
+/* --- Animations (Retained as backup) --- */
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+/* --- Responsive Media Queries --- */
+@media (max-width: 992px) {
+    .hero h1 { font-size: 3rem; }
+    .features h2 { font-size: 2rem; }
+}
+
+@media (max-width: 768px) {
+    .hero h1 { font-size: 2.2rem; }
+    .hero .subtitle { font-size: 1.1rem; }
+    .features, .container { padding: 25px; }
+    .page-wrapper { padding: 100px 15px 30px 15px; }
+    
+    .medicine-grid { grid-template-columns: 1fr; }
+}
+
+/* --- Flash Messages --- */
+.flash-messages {
+    width: 100%;
+    max-width: 800px;
+    margin: 0 auto 30px;
+    padding: 0;
+    list-style: none;
+}
+
+.alert {
+    padding: 15px 20px;
+    margin-bottom: 15px;
+    border-radius: 8px;
+    font-size: 1rem;
+    text-align: center;
+    border: 1px solid transparent;
+}
+
+.alert-success { color: #155724; background-color: #d4edda; border-color: #c3e6cb; }
+.alert-danger { color: #721c24; background-color: #f8d7da; border-color: #f5c6cb; }
+.alert-info { color: #0c5460; background-color: #d1ecf1; border-color: #bee5eb; }
+
+/* --- Password Toggle --- */
+.password-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.password-wrapper input {
+    width: 100%;
+    padding-right: 50px;
+}
+
+.toggle-password {
+    position: absolute;
+    top: 50%;
+    right: 15px;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: var(--text-secondary);
+    font-size: 1rem;
+}
+
+/* --- Animated Character Styles --- */
+#animated-character {
+    position: fixed;
+    bottom: -85px;
+    left: -70px;
+    width: 340px;
+    height: 400px;
+    z-index: 1001;
+    transition: transform 0.3s ease;
+}
+
+#animated-character img {
+    width: 100%;
+    height: auto;
+}
+
+#animated-character:hover {
+    transform: scale(1.05);
+}
+
+/* --- Dashboard / Analytics Styles --- */
+.page-title {
+    color: #fff;
+    text-align: center;
+    margin-bottom: 0.5rem;
+    font-size: 2.5rem;
+    font-weight: 700;
+}
+
+.page-subtitle {
+    text-align: center;
+    color: var(--text-secondary);
+    margin-top: 0;
+    margin-bottom: 3rem;
+    font-size: 1.1rem;
+}
+
+.control-panel {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    padding: 30px;
+    border-radius: 15px;
+    margin-bottom: 30px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 25px;
+    align-items: flex-end;
+}
+
+@media (max-width: 900px) {
+    .control-panel {
+        grid-template-columns: 1fr;
+    }
+}
+
+.control-group {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.control-group label {
+    font-weight: 600;
+    color: var(--accent-color);
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.plot-container-wrapper {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 15px;
+    padding: 30px;
+    min-height: 600px; 
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+}
+
+#plot-container {
+    width: 100%;
+    min-height: 550px;
+}
+
+.loader {
+    border: 5px solid rgba(255,255,255,0.1);
+    border-top: 5px solid var(--accent-color);
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    animation: spin 1s linear infinite;
+    display: none;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* 1. Main Header Container */
+.main-header {
+    width: 100%;
+    height: 80px; /* Fixed height */
+    padding: 0 5%;
+    background: rgba(10, 25, 47, 0.95); 
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(135, 206, 250, 0.2);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    -webkit-backdrop-filter: blur(10px);
+}
+
+/* 2. Nav Layout Wrapper */
+.main-header nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    max-width: 1400px;
+    margin: 0 auto;
+    height: 100%;
+}
+
+/* 3. NEW LOGO STYLING */
+.nav-logo {
+    display: flex;
+    align-items: center;
+    height: 100%;
+    text-decoration: none;
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.nav-logo:hover {
+    transform: scale(1.05);
+    /* No color change needed here as SVG handles its own colors */
+}
+
+.aio-logo {
+    height: 45px; /* PERFECT FIT for 80px header (leaving ~17px padding top/bottom) */
+    width: auto;  /* Maintains aspect ratio based on the height */
+    display: block;
+}
+
+/* ... (Rest of your CSS: .nav-links, .user-actions, etc.) ... */

@@ -1,0 +1,266 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block styles %}
+<style>
+    .dashboard-title {
+        text-align: center;
+        margin-bottom: 20px;
+        color: white;
+        font-weight: 600;
+    }
+
+    .alert-danger {
+        color: #f8d7da;
+        background-color: #721c24;
+        border-color: #f5c6cb;
+        padding: 15px;
+        border-radius: 8px;
+        text-align: center;
+        grid-column: 1 / -1;
+    }
+
+    /* --- STYLES FOR FILTER FORM --- */
+    .filter-form {
+        background-color: #1a202c; /* <-- CHANGED */
+        border: none; /* <-- CHANGED */
+        border-radius: 10px;
+        padding: 25px;
+        box-shadow: none; /* <-- CHANGED */
+        margin-bottom: 25px;
+        max-width: 100%; /* Keeps form inside container */
+        box-sizing: border-box;
+    }
+
+    /* --- MODIFIED CSS for H3 --- */
+    .filter-form h3 {
+        color: white;
+        margin-top: 0;
+        /* Removed large margin-bottom, flex-end alignment will handle it */
+        margin-bottom: 0; 
+        border-bottom: 2px solid #00aaff;
+        padding-bottom: 10px;
+        /* Added to make border only span the text width */
+        display: inline-block; 
+    }
+
+    /* --- MODIFIED CSS for Filter Controls --- */
+    .filter-controls {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px;
+        align-items: flex-end;
+        /* Changed from space-between to flex-start to group items */
+        justify-content: flex-start; 
+    }
+
+    .filter-group {
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+        min-width: 250px;
+        max-width: 500px; /* Restrict width to prevent overflow */
+    }
+
+    .filter-group label {
+        color: #ccc;
+        margin-bottom: 8px;
+        font-weight: 600;
+    }
+
+    .filter-group select {
+        padding: 12px;
+        border-radius: 5px;
+        border: 1px solid #555;
+        background-color: #333;
+        color: white;
+        font-size: 1rem;
+        font-family: 'Poppins', sans-serif;
+        width: 100%; /* Make sure it stays inside the group */
+        box-sizing: border-box;
+    }
+
+    .filter-submit-btn {
+        padding: 12px 25px;
+        font-size: 1rem;
+        font-weight: 600;
+        color: white;
+        background-color: #00aaff;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+        height: 47px;
+        white-space: nowrap;
+    }
+
+    .filter-submit-btn:hover {
+        background-color: #0077bb;
+    }
+
+    /* --- RESULTS SECTION --- */
+    .results-grid {
+        display: grid;
+        grid-template-columns: 1fr 2fr;
+        gap: 25px;
+        align-items: stretch;
+    }
+
+    .metric-card {
+        background-color: #344c80; /* <-- CHANGED */
+        border: none; /* <-- CHANGED */
+        border-radius: 10px;
+        padding: 25px;
+        box-shadow: none; /* <-- CHANGED */
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+    }
+
+    .metric-card-title {
+        color: #ccc;
+        font-size: 1.2rem;
+        font-weight: 600;
+        margin-bottom: 15px;
+    }
+
+    .metric-card-value {
+        color: #00aaff;
+        font-size: 4rem;
+        font-weight: 700;
+        line-height: 1;
+    }
+
+    .chart-container {
+        background-color: #1a202c; /* <-- CHANGED */
+        border: none; /* <-- CHANGED */
+        border-radius: 10px;
+        padding: 20px;
+        box-shadow: none; /* <-- CHANGED */
+    }
+
+    .prompt-message {
+        background-color: #1a202c; /* <-- CHANGED */
+        border: 1px dashed #555; /* <-- Kept border for style */
+        border-radius: 10px;
+        padding: 40px;
+        text-align: center;
+        color: #888;
+        grid-column: 1 / -1;
+    }
+
+    /* --- PLOT SWITCHER --- */
+    .plot-switcher {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        margin-bottom: 15px;
+    }
+
+    .plot-switcher-btn {
+        padding: 8px 16px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: #ccc;
+        background-color: #333;
+        border: 1px solid #555;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .plot-switcher-btn:hover {
+        background-color: #444;
+        color: white;
+    }
+
+    .plot-switcher-btn.active {
+        background-color: #00aaff;
+        border-color: #00aaff;
+        color: white;
+    }
+
+    /* --- RESPONSIVE DESIGN --- */
+    @media (max-width: 900px) {
+        .results-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @media (max-width: 600px) {
+        .filter-controls {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .filter-group {
+            max-width: 100%;
+        }
+
+        .filter-submit-btn {
+            width: 100%;
+            height: auto;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="content-wrapper" style="padding: 20px;">
+    <h1 class="dashboard-title">Select a Condition to Analyze the Medicine</h1>
+
+    <form class="filter-form" method="POST" action="{{ url_for('dashboard_page') }}">
+        <div class="filter-controls">
+            
+            <div class="filter-group">
+                <label for="reason-filter">Condition (Reason)</label>
+                <select name="reason_filter" id="reason-filter">
+                    <option value="All">-- Select a Condition --</option>
+                    {% for reason in all_reasons %}
+                        <option value="{{ reason }}" {% if reason == selected_reason %}selected{% endif %}>
+                            {{ reason }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <button type="submit" class="filter-submit-btn">Analyze</button>
+        </div>
+    </form>
+    <div class="results-grid">
+        {% if error %}
+            <div class="alert alert-danger">{{ error }}</div>
+        {% elif selected_reason != 'All' %}
+            <div class="metric-card">
+                <div class="metric-card-title">
+                    Total Medicines Available for "{{ selected_reason }}"
+                </div>
+                <div class="metric-card-value">{{ total_medicines }}</div>
+            </div>
+
+            <div class="chart-container">
+                <form class="plot-switcher" method="POST" action="{{ url_for('dashboard_page') }}">
+                    <input type="hidden" name="reason_filter" value="{{ selected_origin }}">
+                    <button type="submit" name="plot_type" value="pie"
+                        class="plot-switcher-btn {% if selected_plot_type == 'pie' %}active{% endif %}">
+                        Pie Chart
+                    </button>
+                    <button type="submit" name="plot_type" value="bar"
+                        class="plot-switcher-btn {% if selected_plot_type == 'bar' %}active{% endif %}">
+                        Bar Chart
+                    </button>
+                </form>
+                {% if chart_html %}
+                    {{ chart_html | safe }}
+                {% endif %}
+            </div>
+        {% else %}
+            <div class="prompt-message">
+                <h3>Please select a condition from the dropdown to see the analysis.</h3>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
