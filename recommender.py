@@ -123,45 +123,46 @@ def get_substitutes(medicine_name, df):
     substitutes = df[df['name'] == medicine_name][['substitute0', 'substitute1', 'substitute2', 'substitute3', 'substitute4']]
     return substitutes.values.flatten().tolist()
 
-# --- UPDATED: Comprehensive Test Block ---
+# --- NEW FUNCTIONALITY: Contextual Recommendations ---
+def get_contextual_recommendations(query, df, model, collection):
+    """
+    Finds medicines for 'associated conditions' or 'causes' related to the query.
+    Uses a broader search query and higher diversity (lower lambda) in MMR.
+    """
+    try:
+        # Augment query to find deeper associations (e.g. "Fever" -> "Fever causes associated conditions")
+        advanced_query = query + " associated conditions causes treatment"
+        
+        query_vec = model.encode([advanced_query]).tolist()
+        
+        # Fetch more results to explore the 'tail' of the distribution
+        results = collection.query(
+            query_embeddings=query_vec,
+            n_results=50, 
+            include=['embeddings', 'documents', 'metadatas'] 
+        )
+        
+        if not results.get('ids') or not results['ids'][0]:
+            return pd.DataFrame()
+
+        candidate_ids = results['ids'][0]
+        candidate_embeddings = results['embeddings'][0]
+        
+        # Use lower lambda_param (0.3) to prefer DIVERSITY over strict similarity
+        final_ids = mmr_sort(query_vec[0], candidate_embeddings, candidate_ids, k=15, lambda_param=0.3)
+        
+        final_indices = [int(uid) for uid in final_ids]
+        return df.loc[final_indices]
+
+    except Exception as e:
+        print(f"Error getting contextual recommendations: {e}")
+        return pd.DataFrame()
 
 if __name__ == '__main__':
+    # Test block
     DATAFRAME_FILE = 'processed_data.pkl'
-    
-    # Load components
     model, collection, df = load_model_components(DATAFRAME_FILE)
-
-    if df is not None and model is not None and collection is not None:
-        
-        # Define a list of test queries to verify different scenarios
-        test_queries = [
-            "Fever and headache",   # Symptom search
-            "Paracetamol",          # Direct medicine name search
-            "Skin rash",            # Another symptom
-            "Diabetes",             # Chronic condition
-            "XylophoneZebra123"     # Nonsense word (to test graceful failure)
-        ]
-
-        print("\n" + "="*40)
-        print("   STARTING BATCH TEST OF RECOMMENDER   ")
-        print("="*40)
-
-        for query in test_queries:
-            print(f"\n🔎 Query: '{query}'")
-            recommendations = get_recommendations(query, df, model, collection)
-            
-            if not recommendations.empty:
-                # Show top 3 results for brevity
-                print(recommendations[['name', 'reason']].head(3))
-                
-                # If it's a direct medicine match, show substitutes too
-                top_med_name = recommendations.iloc[0]['name']
-                if query.lower() in top_med_name.lower():
-                    subs = get_substitutes(top_med_name, df)
-                    print(f"   -> Substitutes for {top_med_name}: {subs}")
-            else:
-                print("   -> No recommendations found.")
-                
-        print("\n" + "="*40)
-        print("   TEST COMPLETE   ")
-        print("="*40)
+    if df is not None:
+        print("Testing Contextual Search for 'Fever'...")
+        recs = get_contextual_recommendations("Fever", df, model, collection)
+        print(recs[['name', 'reason']].head(5))

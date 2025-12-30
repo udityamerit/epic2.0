@@ -48,20 +48,33 @@
             margin-bottom: 15px;
         }
 
-        /* ======================================= */
-        /* == THIS IS THE FIX FOR THE HOVER EFFECT == */
-        /* ======================================= */
         #mic-btn {
-            color: #00cefc; /* A clear default color for the icon */
+            color: #00cefc; 
             transition: transform 0.2s ease, color 0.2s ease;
         }
         #mic-btn:hover {
-            opacity: 1 !important; /* Prevents it from fading out */
-            transform: scale(2.05); /* Makes the icon slightly larger */
-            color: #1aff00; /* Changes the icon color to blue */
+            opacity: 1 !important; 
+            transform: scale(2.05); 
+            color: #1aff00; 
         }
-        /* ======================================= */
 
+        /* NEW STYLE FOR RECOMMENDATION BUTTON */
+        .btn-contextual {
+            background-color: #e67e22; 
+            color: white; 
+            padding: 10px 15px; 
+            border: none; 
+            border-radius: 5px; 
+            cursor: pointer; 
+            font-size: 1em; 
+            text-decoration: none; 
+            display: inline-block;
+            margin-top: 10px;
+        }
+        .btn-contextual:hover {
+            background-color: #d35400;
+            color: white;
+        }
     </style>
 
     <div id="listening-modal" class="modal-overlay">
@@ -75,59 +88,66 @@
     </section>
 
     <div class="animation-container" style="text-align: center; margin-bottom: 20px;">
-    <img src="{{ url_for('static', filename='scanning.gif') }}" alt="Scanning Animation" style="width: 300px; height: auto;">
-</div>
-        <form id="search-form" action="/recommender" method="post">
-            <input type="text" name="query" placeholder="e.g., 'headache' or 'Crocin'" value="{{ query if query else '' }}" required>
-            
-            <button type="button" id="mic-btn" style="padding: 10px; background: none; border: none; cursor: pointer; font-size: 1.2em;">
-                <i class="fas fa-microphone"></i>
-            </button>
-            <button type="submit">Search</button>
-        </form>
+        <img src="{{ url_for('static', filename='scanning.gif') }}" alt="Scanning Animation" style="width: 300px; height: auto;">
+    </div>
+    
+    <form id="search-form" action="/recommender" method="post">
+        <input type="text" name="query" placeholder="e.g., 'headache' or 'Crocin'" value="{{ query if query else '' }}" required>
+        
+        <button type="button" id="mic-btn" style="padding: 10px; background: none; border: none; cursor: pointer; font-size: 1.2em;">
+            <i class="fas fa-microphone"></i>
+        </button>
+        <button type="submit">Search</button>
+    </form>
 
-        {% if recommendation %} <div class="results">
-                <h2>Best Match Found</h2>
-                <div class="medicine-card">
-                    <h3>{{ recommendation['name'] }}</h3>
-                    <p><strong>Description:</strong> {{ recommendation['description'] }}</p>
-                    <p><strong>Reason for Use:</strong> {{ recommendation['reason'] }}</p>
-                    <p><strong>Age Group:</strong> {{ recommendation['age_group'] }}</p>
-                </div>
+    {% if recommendation %} 
+    <div class="results">
+        <h2>Best Match Found</h2>
+        <div class="medicine-card">
+            <h3>{{ recommendation['name'] }}</h3>
+            <p><strong>Description:</strong> {{ recommendation['description'] }}</p>
+            <p><strong>Reason for Use:</strong> {{ recommendation['reason'] }}</p>
+            <p><strong>Age Group:</strong> {{ recommendation['age_group'] }}</p>
+        </div>
 
-                {% if substitutes %}
-                    <h2>Available Brand Substitutes</h2>
-                    <ul class="substitutes-list">
-                        {% for sub in substitutes %}
-                            {% if sub %} <li>{{ sub }}</li>
-                            {% endif %}
-                        {% endfor %}
-                    </ul>
-                {% else %}
-                    <p class="no-substitutes">No brand substitutes listed for this medicine.</p>
-                {% endif %}
+        {% if substitutes %}
+            <h2>Available Brand Substitutes</h2>
+            <ul class="substitutes-list">
+                {% for sub in substitutes %}
+                    {% if sub %} <li>{{ sub }}</li>
+                    {% endif %}
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p class="no-substitutes">No brand substitutes listed for this medicine.</p>
+        {% endif %}
 
-                {% if other_recommendations %} <div class="show-alternatives">
-                        <button id="toggle-alternatives">Show Other Similar Medicines</button>
-                    </div>
-
-                    <div id="alternatives-section" style="display: none;">
-                        <h2>Other Similar Medicines</h2>
-                        {% for row in other_recommendations %}
-                            <div class="medicine-card-small">
-                                <h3>{{ row['name'] }}</h3>
-                                <p><strong>Description:</strong> {{ row['description'] }}</p>
-                                <p><strong>Reason for Use:</strong> {{ row['reason'] }}</p>
-                                <p><strong>Age Group:</strong> {{ row['age_group'] }}</p>
-                            </div>
-                        {% endfor %}
-                    </div>
-                {% endif %}
+        {% if other_recommendations %} 
+            <div class="show-alternatives">
+                <button id="toggle-alternatives">Show Other Similar Medicines</button>
+                
+                <a href="{{ url_for('contextual_recommendations', query=query) }}" class="btn-contextual">
+                    See Recommended Medicines for Related Conditions
+                </a>
             </div>
-        {% elif error %}
-            <p class="error">{{ error }}</p>
+
+            <div id="alternatives-section" style="display: none;">
+                <h2>Other Similar Medicines</h2>
+                {% for row in other_recommendations %}
+                    <div class="medicine-card-small">
+                        <h3>{{ row['name'] }}</h3>
+                        <p><strong>Description:</strong> {{ row['description'] }}</p>
+                        <p><strong>Reason for Use:</strong> {{ row['reason'] }}</p>
+                        <p><strong>Age Group:</strong> {{ row['age_group'] }}</p>
+                    </div>
+                {% endfor %}
+            </div>
         {% endif %}
     </div>
+    {% elif error %}
+        <p class="error">{{ error }}</p>
+    {% endif %}
+
 {% endblock %}
 
 {% block scripts %}
@@ -143,7 +163,6 @@
         if ('webkitSpeechRecognition' in window) {
             const recognition = new webkitSpeechRecognition();
             let isListening = false;
-            
             let audioContext;
             let analyser;
             let source;
@@ -157,15 +176,11 @@
             recognition.lang = 'en-US';
             
             listeningModal.addEventListener('click', () => {
-                if (isListening) {
-                    recognition.stop();
-                }
+                if (isListening) recognition.stop();
             });
 
             micBtn.addEventListener('click', () => {
-                if (!isListening) {
-                    recognition.start();
-                }
+                if (!isListening) recognition.start();
             });
 
             recognition.onstart = () => {
@@ -185,9 +200,7 @@
             recognition.onresult = (event) => {
                 let final_transcript = '';
                 for (let i = event.resultIndex; i < event.results.length; ++i) {
-                    if (event.results[i].isFinal) {
-                        final_transcript += event.results[i][0].transcript;
-                    }
+                    if (event.results[i].isFinal) final_transcript += event.results[i][0].transcript;
                 }
                 if (final_transcript) {
                     searchInput.value = final_transcript;
@@ -195,27 +208,17 @@
                     setTimeout(() => searchForm.submit(), 300);
                 }
             };
-
-            recognition.onerror = (event) => {
-                console.error('Speech recognition error:', event.error);
-            };
             
             function initVisualizer() {
-                navigator.mediaDevices.getUserMedia({ audio: true })
-                    .then(stream => {
-                        audioStream = stream;
-                        audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                        analyser = audioContext.createAnalyser();
-                        source = audioContext.createMediaStreamSource(stream);
-                        source.connect(analyser);
-                        analyser.fftSize = 256;
-                        const bufferLength = analyser.frequencyBinCount;
-                        const dataArray = new Uint8Array(bufferLength);
-                        drawVisualizer(dataArray, bufferLength);
-                    })
-                    .catch(err => {
-                        console.error('Error accessing microphone for visualizer:', err);
-                    });
+                navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
+                    audioStream = stream;
+                    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    analyser = audioContext.createAnalyser();
+                    source = audioContext.createMediaStreamSource(stream);
+                    source.connect(analyser);
+                    analyser.fftSize = 256;
+                    drawVisualizer(new Uint8Array(analyser.frequencyBinCount), analyser.frequencyBinCount);
+                });
             }
 
             function drawVisualizer(dataArray, bufferLength) {
@@ -225,13 +228,8 @@
                 let x = 0;
                 for (let i = 0; i < bufferLength; i++) {
                     const barHeight = dataArray[i] / 2;
-                    const r = 150 + (barHeight / 2);
-                    const g = 200 - barHeight;
-                    const b = 255;
-                    canvasCtx.fillStyle = `rgb(${r}, ${g}, ${b})`;
-                    canvasCtx.beginPath();
-                    canvasCtx.arc(x, canvas.height - barHeight, barWidth / 2, 0, 2 * Math.PI);
-                    canvasCtx.fill();
+                    canvasCtx.fillStyle = `rgb(${150 + barHeight/2}, ${200 - barHeight}, 255)`;
+                    canvasCtx.fillRect(x, canvas.height - barHeight, barWidth, barHeight);
                     x += barWidth + 1;
                 }
                 animationFrameId = requestAnimationFrame(() => drawVisualizer(dataArray, bufferLength));

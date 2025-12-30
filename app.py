@@ -3,7 +3,8 @@ import math
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
 from flask_cors import CORS
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
-from recommender import load_model_components, get_recommendations, get_substitutes
+# IMPORT THE NEW FUNCTION HERE
+from recommender import load_model_components, get_recommendations, get_substitutes, get_contextual_recommendations
 import pandas as pd
 import plotly.express as px
 import json
@@ -57,10 +58,8 @@ users = load_users()
 def load_user(user_id):
     return users.get(user_id)
 
-# --- Load Model Components (Updated for ChromaDB) ---
+# --- Load Model Components ---
 DATAFRAME_FILE = 'processed_data.pkl'
-
-# Variable unpacking updated: returns model, collection, df
 model, collection, df = load_model_components(DATAFRAME_FILE)
 
 
@@ -163,7 +162,6 @@ def recommender_page():
     if request.method == 'POST':
         user_query = request.form.get('query')
 
-        # Updated check for model/collection
         if df is None or model is None or collection is None:
             flash('Sorry, the recommendation service is currently unavailable. Please contact the administrator.', 'danger')
             return render_template('index.html', error="Service unavailable.", query=user_query)
@@ -172,13 +170,14 @@ def recommender_page():
             flash('Please enter a medicine name or a symptom to search.', 'info')
             return render_template('index.html', recommendation=None, error=None, query=None)
 
-        # UPDATED CALL: Passing model and collection instead of vectorizer/matrix
         recommended_medicines = get_recommendations(user_query, df, model, collection)
         
         if not recommended_medicines.empty:
             top_recommendation = recommended_medicines.iloc[0].to_dict()
             substitutes = get_substitutes(top_recommendation['name'], df)
             other_recommendations = recommended_medicines.iloc[1:].to_dict('records') 
+            
+            # Pass all original data + query
             return render_template('index.html', 
                                    recommendation=top_recommendation, 
                                    substitutes=substitutes, 
@@ -189,6 +188,33 @@ def recommender_page():
         return render_template('index.html', error=error_message, query=user_query)
 
     return render_template('index.html', recommendation=None, error=None, query=None)
+
+# --- NEW ROUTE FOR CONTEXTUAL/ASSOCIATED RECOMMENDATIONS ---
+@app.route('/recommended_medicines')
+@login_required
+def contextual_recommendations():
+    query = request.args.get('query')
+    if not query:
+        flash('No query provided.', 'warning')
+        return redirect(url_for('recommender_page'))
+    
+    if df is None or model is None:
+         flash('Service unavailable.', 'danger')
+         return redirect(url_for('recommender_page'))
+         
+    # Call the new function for broader/related search
+    contextual_meds_df = get_contextual_recommendations(query, df, model, collection)
+    
+    if contextual_meds_df.empty:
+        flash(f'No contextual recommendations found for {query}', 'warning')
+        return redirect(url_for('recommender_page'))
+        
+    contextual_meds = contextual_meds_df.to_dict('records')
+    
+    return render_template('recommendations.html', 
+                           original_query=query, 
+                           medicines=contextual_meds)
+
 
 @app.route('/medicines')
 @login_required
@@ -293,21 +319,11 @@ def find_pharmacies():
     except Exception as e:
         print(f"Error parsing request: {e}")
         return jsonify({"error": f"Invalid request: {e}"}), 400
-
-    print(f"\n--- NEW PHARMACY SEARCH ---")
-    print(f"Searching for pharmacies within {SEARCH_RADIUS_KM}km of ({user_lat}, {user_lon})")
     
     pharmacies_with_distance = []
-    
     for pharmacy in pharmacy_data:
         try:
-            dist = haversine(
-                user_lat, 
-                user_lon,
-                pharmacy['latitude'], 
-                pharmacy['longitude']
-            )
-            
+            dist = haversine(user_lat, user_lon, pharmacy['latitude'], pharmacy['longitude'])
             if dist <= SEARCH_RADIUS_KM:
                 pharmacies_with_distance.append({
                     'name': pharmacy.get('Name', 'N/A'),
@@ -317,8 +333,8 @@ def find_pharmacies():
                     'latitude': pharmacy['latitude'],
                     'longitude': pharmacy['longitude']
                 })
-        except Exception as e:
-            print(f"Error processing {pharmacy.get('Name')}: {e}")
+        except Exception:
+            pass
             
     if not pharmacies_with_distance:
         return jsonify([])
